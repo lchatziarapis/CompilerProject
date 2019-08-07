@@ -1,0 +1,95 @@
+Package minipython;
+
+Helpers
+	digit = ['0' .. '9'];
+	letter = ['a' .. 'z']|['A' .. 'Z']; 
+	cr = 13; 
+	lf = 10;
+	all = [0..127]; 
+	eol = lf | cr | cr lf ;
+	not_eol = [all - [cr + lf]]; 
+
+Tokens
+	tab = 9;
+	plus = '+';
+	minus = '-';
+	mult = '*';
+	div = '/';
+	eq = '=';
+	deq = '==';
+	minus_eq = '-=';
+	div_eq = '/=';
+	not_equal = '!=';
+	def = 'def';
+	l_par = '(';
+	r_par = ')';
+	l_br = '[';
+	r_br = ']';
+	if = 'if';
+	while = 'while';
+	for = 'for';
+	print = 'print';
+	return = 'return';
+	comma = ',';
+	in = 'in';
+	less = '<';
+	great = '>';
+	true = 'true';
+	semi = ':';
+	false = 'false';
+	quote = '"';
+	squote = 39;
+	blank = (' ' | lf | cr);
+	line_comment = '#' not_eol* eol; 
+	number = digit+;
+	identifier = letter (letter | digit)*;
+	string = '"'not_eol* '"';
+
+Ignored Tokens
+	blank, line_comment;
+
+Productions
+	goal = program*;
+	program = {stat} function|statement;
+	function = {func}def identifier l_par argument? r_par semi statement;
+	argument = {arg} identifier eq_value? argument2*;
+	argument2 = {arg2} comma identifier eq_value?;
+	statement = {if} tab* if comparison semi statement |
+				{while} tab* while comparison semi statement |
+				{for} tab* for [left]:identifier in [right]:identifier semi statement |
+				{return} tab* return expression |
+				{print} tab* print expression com_expr* |
+				{calculate} tab* identifier evaluator expression |
+				{calculate2} tab* identifier l_br [left_expr]:expression r_br eq [right_expr]:expression |
+				{func} tab* function_call;
+	
+	expression = {ex1} l_par expression r_par expr_operator|
+				 {ex2} identifier l_br expression r_br |
+				 {ex3} function_call |
+				 {ex4} value |
+				 {ex5} identifier |
+				 {ex6} l_br expression com_expr* r_br |
+				 {ex7} l_par expression r_par;
+	
+	expr_operator = {mult} mult l_par expression r_par |
+					{div} div l_par expression r_par |
+					{plus} plus l_par expression r_par |
+					{minus} minus l_par expression r_par;
+					
+			   
+	evaluator = {eq} eq |
+				{minus_eq} minus_eq |
+				{div_eq} div_eq;
+	
+	comparison = {true} true |
+				{false} false |
+				{lessc} [lpar]:expression less [rpar]:expression |
+				{greatc}[lpar]:expression great [rpar]:expression |
+				{noteqc}[lpar]:expression not_equal [rpar]:expression |
+				{eqc}[lpar]:expression deq [rpar]:expression;
+				
+	function_call = {function_call} identifier l_par arg_list? r_par;
+	arg_list = {arg_list} expression com_expr*;
+	com_expr = {com_expr} comma expression;
+	eq_value = {eqq} eq value;
+	value =  {val} number;
